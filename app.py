@@ -20,7 +20,8 @@ def search_movies_suggestions(query: str) -> List[str]:
                         "query": query,
                         "fields": ["title^3", "plot", "director", "cast", "genre"],
                         "fuzziness": "AUTO",  # Enables fuzzy matching
-                        "type": "best_fields"
+                        "type": "best_fields",
+                        "operator": "and"  # Ensures that all terms must match
                     }
                 },
                 "highlight": {
