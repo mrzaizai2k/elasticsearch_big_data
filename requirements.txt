@@ -2,3 +2,4 @@ pandas
 elasticsearch
 fastapi
 streamlit
+streamlit_searchbox
