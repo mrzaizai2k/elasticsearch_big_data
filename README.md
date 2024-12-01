@@ -6,7 +6,7 @@ set up lib:
     make install 
 ```
 
-run docker 
+run Elastic Search docker 
 
 ```
 docker run -d \
@@ -19,6 +19,12 @@ docker run -d \
 
 ```
 
+run MongoDB docker (in mongodb_docker folder)
 
+```
+docker-compose up -d
+docker ps
+
+```
 
 Download data: https://www.kaggle.com/datasets/jrobischon/wikipedia-movie-plots?resource=download
