@@ -79,8 +79,4 @@ print(f"Total documents in collection: {collection.count_documents({})}")
 # Close the MongoDB connection
 client.close()
 
-<<<<<<< HEAD
 print('Done')
-=======
-print('Done')
->>>>>>> c177075 (MongoDB edit version)
