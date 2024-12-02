@@ -6,11 +6,7 @@ Set up environment:
     make install 
 ```
 
-<<<<<<< HEAD
 Run Elastic Search docker
-=======
-run Elastic Search docker 
->>>>>>> c177075 (MongoDB edit version)
 
 ```
 docker run -d \
