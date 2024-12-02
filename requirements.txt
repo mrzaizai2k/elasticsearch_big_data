@@ -3,5 +3,4 @@ elasticsearch
 fastapi
 streamlit
 streamlit_searchbox
-streamlit-searchbox
 pymongo
