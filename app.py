@@ -4,6 +4,7 @@ from pymongo import MongoClient
 from streamlit_searchbox import st_searchbox
 from typing import List, Dict, Any
 import time
+from utils import timeit
 
 # Connect to Elasticsearch
 es = Elasticsearch("http://localhost:9200")
@@ -16,6 +17,7 @@ collection = db['movies']
 timing=0.0
 timing_mongo=0.0
 
+@timeit
 def search_movies_suggestions(query: str) -> List[str]:
     global timing
     start = time.time()
@@ -71,49 +73,54 @@ def search_movies_suggestions(query: str) -> List[str]:
         print("Error in search_movies_suggestions:", e)
         return []
 
+@timeit
 def search_movies_suggestions_mongo(query: str) -> List[str]:
     global timing_mongo
     start = time.time()
-    """Search for movie titles and plots with keyword match and highlight which fields match."""
+    """Search for movie titles and plots with keyword match and infer which fields matched."""
     if not query or len(query.strip()) < 2:
         return []
-    # Perform text search on the fields title, plot, director, cast, and genre
+    
     try:
         suggestions = []
-         # MongoDB text search query
+        
+        # MongoDB text search query
         cursor = collection.find(
             {
-                "$text": {"$search": query}  # Using text search instead of regex
+                "$text": {"$search": query}  # Using text search
             },
-            {"title": 1, "plot": 1, "director": 1, "cast": 1, "genre": 1}  # Return specific fields
-        ).limit(10)  # Limit the results to 10
-        # Process the results and format the matched fields
+            {
+                "title": 1, 
+                "plot": 1, 
+                "director": 1, 
+                "cast": 1, 
+                "genre": 1,
+                "score": {"$meta": "textScore"}  # Include text score for ranking
+            }
+        ).sort([("score", {"$meta": "textScore"})]).limit(10)  # Sort by text score and limit results
+        
+        # Process the results and infer matched fields
         for doc in cursor:
             matched_fields = []
-            # Highlight matched fields (MongoDB text search provides this information)
-            if "title" in doc:
-                matched_fields.append("title")
-            if "plot" in doc:
-                matched_fields.append("plot")
-            if "director" in doc:
-                matched_fields.append("director")
-            if "cast" in doc:
-                matched_fields.append("cast")
-            if "genre" in doc:
-                matched_fields.append("genre")
+            
+            # Infer matched fields by checking if the query appears in each field
+            for field in ["title", "plot", "director", "cast", "genre"]:
+                if field in doc and query.lower() in str(doc[field]).lower():
+                    matched_fields.append(field)
 
             # Format the matched fields for display
             matched_fields_str = ", ".join(matched_fields) if matched_fields else "Unknown"
             suggestions.append(f"{doc['title']} (Matched in: {matched_fields_str})")
-
+        
         stop = time.time()
-        timing_mongo = (stop - start)*1000
+        timing_mongo = (stop - start) * 1000
         suggestions.insert(0, f"Search time by Mongo: {timing_mongo:.3f} ms")
 
         return suggestions
     except Exception as e:
         print("Error in search_movies_suggestions_mongo:", e)
         return []
+
 
 
 def get_movie_details(title: str, elasticSearch: bool) -> Dict[str, Any]:
